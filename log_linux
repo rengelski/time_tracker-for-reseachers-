@@ -1,0 +1,154 @@
+#!/bin/bash
+file_name='TimeLogs'
+institution='GDAŃSK UNIVERSITY OF TECHNOLOGY'										
+faculty='Faculty of Applied Physics and Mathematics'										
+institute='Institute of Physics and Applied Computer Science'										
+division='Division of Computational Chemical Physics'										
+										
+name='PhD Student: Rengel Cane E. Sia'										
+id='PhD Student ID:183519'										
+prof='Supervisor: dr. hab. Julien Guthmuller, prof. PG'	
+
+signature="__________
+
+
+
+
+"`date '+%Y/%m/%d'`"
+_________________________________                                       _________________________________
+Date and Signature of PhD Student                                       Date and Signature of Supervisor" 							
+
+touch "$file_name"_"$(date +"%Y_%m").log"
+
+#Activity
+echo "please select activity:
+1.lectures
+2.teaching
+3.research
+4.seminars|workshops|conferences
+5.holiday"
+
+read act
+if [[ "$act" = "1" ]];then
+	activity='lecture'
+	echo "activity: "$activity""
+
+elif [[ "$act" = "2" ]];then 
+	activity='teaching'
+	echo "activity: $activity"
+
+elif [[ "$act" = "3" ]];then 
+	activity='research'
+	echo "activity: $activity"
+
+elif [[ "$act" = "4" ]];then 
+	activity='seminar|workshop|conference'
+	echo "activity: $activity"
+
+elif [[ "$act" = "5" ]];then 
+	activity='HOLIDAY'
+	echo "activity: $activity"
+
+else 
+	echo "you have chosen an incorrect option"
+	activity='unidentified'
+	echo "activity: $activity"
+fi
+
+################ VARIABLES ################
+ll=$( tail -n 1 "$file_name"_"$(date +"%Y_%m").log" )
+rl="${ll%% *}"
+#echo "rl: $rl"
+################# HEADER #####################
+if [[ "$ll" = "" ]]; then
+	echo "$institution
+$faculty
+$intitute$division
+
+$name
+$id
+$prof
+__________ 
+
+`date +"%A"` Activity: $activity 
+"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""">> "$file_name"_"$(date +"%Y_%m").log"
+	echo "First working day of the month: "`date '+%Y.%m.%d @ %H:%M:%S'`""
+
+#"`date +"%A"` Activity: $activity 
+#"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`"">> "$file_name"_"$(date +"%Y_%m").log""
+
+fi
+ll=$( tail -n 1 "$file_name"_"$(date +"%Y_%m").log" )
+rl="${ll%% *}"
+#echo "rl: "$rl""
+if [[ "$rl" == "Date" ]];then
+	sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-9)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+	ll=$( tail -n 1 "$file_name"_"$(date +"%Y_%m").log" )
+fi
+if [[ "$rl" == "elapsed_time:" ]];then
+	#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-1)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+	ll=$(cat "$file_name"_"$(date +"%Y_%m").log" | tail -3 | head -1 )
+	#echo "$ll"
+	#ll=$( tail -n 1 "$file_name"_"$(date +"%Y_%m").log" )
+fi
+rl="${ll%% *}"
+#echo "rl: $rl"
+sl=${ll#*log-in  : }
+#echo "ll: $ll"
+#echo "sl: $sl"
+fulldate=${sl#*: }
+#echo "full date: $fulldate"
+idate=${fulldate%% *}
+#echo "idate: $idate"
+itime=${fulldate#*@ }
+iday=${idate#*.*.}
+#echo "iday: $iday"
+fday=`date '+%d'`
+#echo "today: "`date '+%d'`""
+itime=$(date -d "$itime" "+%s")
+ftime="`date '+%H:%M:%S'`"
+ftime=$(date -d "$ftime" "+%s")	
+dtime=$(($ftime-$itime))
+hrs=$(($dtime/3600))
+rhrs=$(($dtime%3600))
+min=$(($rhrs/60))
+sec=$(($rhrs%60))
+n_hours="$hrs""hrs,""$min""mins,""$sec""secs"
+#echo "itime: $itime"
+#echo "ftime: $ftime"
+echo "logged at date: "`date '+%Y.%m.%d @ %H:%M:%S'`""
+
+ll=$( tail -n 1 "$file_name"_"$(date +"%Y_%m").log" )
+rl="${ll%% *}"
+
+#if [[ "$iday" = "$fday" ]];then
+#	if [[ "$rl" == "elapsed_time:" ]];then  
+#		sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-1)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+#	fi
+#fi
+
+if [[ "$iday" = "$fday" ]];then
+	if [[ "$rl" == "elapsed_time:" ]];then  
+		sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-1)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+	fi
+	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file_name"_"$(date +"%Y_%m").log"
+	echo "elapsed_time: ""$n_hours" >> "$file_name"_"$(date +"%Y_%m").log"
+	echo "you have spent "$n_hours" on $activity"
+else
+	echo "
+`date +"%A"` Activity: $activity 
+"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""" >> "$file_name"_"$(date +"%Y_%m").log"
+	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file_name"_"$(date +"%Y_%m").log"
+	echo "elapsed_time: ""0hrs,0mins,0secs" >> "$file_name"_"$(date +"%Y_%m").log"
+	echo "you have spent 0hrs,0mins,0secs on $activity"
+fi
+
+lday=$(cal $(date +"%m %Y") | awk 'NF {DAYS = $NF}; END {print DAYS}')
+lday=$(($lday-4))
+#echo "lday: $lday"
+#echo "fday: $fday"
+
+if [[ "$fday" > "$lday" ]];then
+	echo "$signature" >> ""$file_name"_"$(date +"%Y_%m").log""
+fi
+
