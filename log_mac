@@ -1,0 +1,172 @@
+#!/bin/bash
+file_name='TimeLogs'
+institution='Univerity of Oulu'										
+faculty='Faculty of Science'																			
+division='Nano and Molecular Systems Research Unit'																		
+name='Postdoctoral Researcher: Rengel Cane E. Sia'																				
+prof='Line Manager: Assistant Professor Matti Silveri'	
+
+
+signature="__________
+
+
+
+
+"`date '+%Y/%m/%d'`"
+_________________________________                                       _________________________________
+Date and Signature of PhD Student                                       Date and Signature of Supervisor" 							
+
+touch "$file_name"_"$(date +"%Y_%m").log"
+file="$file_name"_"$(date +"%Y_%m").log"
+#Activity
+echo "please select activity:
+1.lectures
+2.teaching
+3.research
+4.seminars|workshops|conferences
+5.holiday"
+
+read act
+if [[ "$act" = "1" ]];then
+	activity='lecture'
+	echo "activity: "$activity""
+
+elif [[ "$act" = "2" ]];then 
+	activity='teaching'
+	echo "activity: $activity"
+
+elif [[ "$act" = "3" ]];then 
+	activity='research'
+	echo "activity: $activity"
+
+elif [[ "$act" = "4" ]];then 
+	activity='seminar|workshop|conference'
+	echo "activity: $activity"
+
+elif [[ "$act" = "5" ]];then 
+	activity='HOLIDAY'
+	echo "activity: $activity"
+
+else 
+	echo "you have chosen an incorrect option"
+	activity='unidentified'
+	echo "activity: $activity"
+fi
+
+################ VARIABLES ################
+ll=$( tail -n 1 "$file" )
+rl="${ll%% *}"
+#echo "rl: $rl"
+################# HEADER #####################
+if [[ "$ll" = "" ]]; then
+	echo "$institution
+$faculty
+$intitute$division
+
+$name
+$id
+$prof
+__________ 
+
+`date +"%A"` Activity: $activity 
+"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""">> "$file"
+	echo "First working day of the month: "`date '+%Y.%m.%d @ %H:%M:%S'`""
+
+#"`date +"%A"` Activity: $activity 
+#"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`"">> "$file_name"_"$(date +"%Y_%m").log""
+
+fi
+ll=$( tail -n 1 "$file" )
+rl="${ll%% *}"
+#echo "rl: "$rl""
+
+if [[ "$rl" == "Date" ]];then
+    #awk -v n=3 'NR>n{print a[NR%n]} {a[NR%n]=$0}' input.txt > temp.txt && mv temp.txt input.txt
+	#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-9)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+    awk -v n=9 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
+	ll=$( tail -n 1 "$file" )
+fi
+if [[ "$rl" == "elapsed_time:" ]];then
+    awk -v n=2 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
+    #sed -e :a -e '$d;N;2,Nd;ba' "$file" > tmp.txt && mv tmp.txt "$file"
+	#sed '$d' "$file_name"_"$(date +"%Y_%m").log"; sed '$d' "$file_name"_"$(date +"%Y_%m").log"
+	#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-2)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+	#ll=$(cat "$file_name"_"$(date +"%Y_%m").log" | tail -3 | head -1 )
+	#echo "ll:$ll"
+	ll=$( tail -n 1 "$file" )
+	#echo "ll:$ll"
+fi
+rl="${ll%% *}"
+#echo "rl: $rl"
+sl=${ll#*log-in  : }
+#echo "ll: $ll"
+#echo "sl: $sl"
+fulldate=${sl#*: }
+#echo "full date: $fulldate"
+idate=${fulldate%% *}
+#echo "idate: $idate"
+itime=${fulldate#*@ }
+iday=${idate#*.*.}
+#echo "iday: $iday"
+fday=`date '+%d'`  
+#echo "fday: $fday"
+#echo "today: "`date '+%d'`""
+itime=$(date -j -f "%H:%M:%S" "$itime" +%s)  #date -j -f "%Y-%m-%d" "2010-10-02" "+%s"
+ftime="`date '+%H:%M:%S'`"
+ftime=$(date +%s)	#ftime=$(date -d "$ftime" +%s.%N)
+dtime=$(awk "BEGIN {print ($ftime-$itime)}") #$(($ftime-$itime))
+hrs=$(awk "BEGIN {print ($dtime/3600)}") #$(($dtime/3600))
+rhrs=$(awk "BEGIN {print ($dtime%3600)}") #$(($dtime%3600))
+min=$(awk "BEGIN {print ($rhrs/60)}") #$(($rhrs/60))
+sec=$(awk "BEGIN {print ($rhrs%60)}") #$(($rhrs%60))
+n_hours="${hrs%.*}""hrs,""${min%.*}""mins,""${sec%.*}""secs"
+#n_hours="$hrs""hrs,""$min""mins,""$sec""secs" ${num%.*}
+#echo "itime: $itime"
+#echo "ftime: $ftime"
+echo "logged at date: "`date '+%Y.%m.%d @ %H:%M:%S'`""
+
+ll=$( tail -n 1 "$file" )
+rl="${ll%% *}"
+
+#if [[ "$iday" = "$fday" ]];then
+#	if [[ "$rl" == "elapsed_time:" ]];then  
+#		sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-1)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+#	fi
+#fi
+
+if [[ "$iday" = "$fday" ]];then
+	if [[ "$rl" == "elapsed_time:" ]];then  
+		#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-2)),\$d" "$file_name"_"$(date +"%Y_%m").log"
+        awk -v n=2 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
+		#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-3)),\$d" "$file"
+        #head -n -2 "$file" > tmp.txt && mv tmp.txt "$file"
+	fi
+	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file"
+	echo "elapsed_time: ""$n_hours" >> "$file"
+	echo "you have spent "$n_hours" on $activity"
+else
+	echo "
+`date +"%A"` Activity: $activity 
+"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""" >> "$file"
+	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file"
+	echo "elapsed_time: ""0hrs,0mins,0secs" >> "$file"
+	echo "you have spent 0hrs,0mins,0secs on $activity"
+fi
+
+lday=$(cal $(date +"%m %Y") | awk 'NF {DAYS = $NF}; END {print DAYS}')
+lday=$(($lday-4))
+#echo "lday: $lday"
+#echo "fday: $fday"
+
+if [[ "$fday" > "$lday" ]];then
+	echo "$signature" >> "$file"
+fi
+
+
+#sed -i -re "s/poniedziałek/""Monday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/wtorek/""Tuesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/środa/""Wednesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/czwartek/""Thursday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/piątek/""Friday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/sobota/""Saturday""/g" ""$file_name"_"$(date +"%Y_%m").log""
+#sed -i -re "s/niedziela/""Sunday""/g" ""$file_name"_"$(date +"%Y_%m").log""
