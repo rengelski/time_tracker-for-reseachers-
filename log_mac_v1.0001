@@ -1,20 +1,20 @@
 #!/bin/bash
 file_name='TimeLogs'
-institution='Univerity of Oulu'										
+institution='University of ___________________'										
 faculty='Faculty of Science'																			
 division='Nano and Molecular Systems Research Unit'																		
-name='Postdoctoral Researcher: Rengel Cane E. Sia'																				
-prof='Line Manager: Assistant Professor Matti Silveri'	
+name='Postdoctoral Researcher: ______________________'																				
+prof='Line Manager: ________________________'	
 
 
-signature="__________
+signature="_______________
 
 
 
 
 "`date '+%Y/%m/%d'`"
-_________________________________                                       _________________________________
-Date and Signature of PhD Student                                       Date and Signature of Supervisor" 							
+________________________________                                       _________________________________
+Date and Signature of Researcher                                       Date and Signature of Supervisor" 							
 
 touch "$file_name"_"$(date +"%Y_%m").log"
 file="$file_name"_"$(date +"%Y_%m").log"
@@ -161,12 +161,3 @@ lday=$(($lday-4))
 if [[ "$fday" > "$lday" ]];then
 	echo "$signature" >> "$file"
 fi
-
-
-#sed -i -re "s/poniedziałek/""Monday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/wtorek/""Tuesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/środa/""Wednesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/czwartek/""Thursday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/piątek/""Friday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/sobota/""Saturday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/niedziela/""Sunday""/g" ""$file_name"_"$(date +"%Y_%m").log""
