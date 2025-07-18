@@ -1,10 +1,10 @@
 #!/bin/bash
 file_name='TimeLogs'
-institution='Univerity of Oulu'										
+institution='Univerity of ___________'										
 faculty='Faculty of Science'																			
 division='Nano and Molecular Systems Research Unit'																		
-name='Postdoctoral Researcher: Rengel Cane E. Sia'																				
-prof='Line Manager: Dr. Matti Silveri'	
+name='Postdoctoral Researcher: __________________'																				
+prof='Line Manager: _________________'	
 
 
 signature="__________
