@@ -1,172 +1,141 @@
 #!/bin/bash
-file_name='TimeLogs'
-institution='Univerity of Oulu'										
-faculty='Faculty of Science'																			
-division='Nano and Molecular Systems Research Unit'																		
-name='Postdoctoral Researcher: Rengel Cane E. Sia'																				
-prof='Line Manager: Assistant Professor Matti Silveri'	
+# Set locale to ensure day names are in English
+export LC_TIME=C.UTF-8
 
+file_name='TimeTracker'
+institution='University of ___________'
+faculty='Faculty of Science'
+division='Nano and Molecular Systems Research Unit'
+name='Researcher: ____________________'
+prof='Line Manager: ____________________'
+
+# Create log directory if it doesn't exist
+mkdir -p "${HOME}/logs"
+cd "${HOME}/logs" || exit 1
+log_file="${HOME}/logs/${file_name}_$(date +"%Y_%m").log"
 
 signature="__________
 
 
 
-
-"`date '+%Y/%m/%d'`"
+$(date '+%Y/%m/%d')
 _________________________________                                       _________________________________
-Date and Signature of PhD Student                                       Date and Signature of Supervisor" 							
+Date and Signature of Postdoc Fellow                                    Date and Signature of Supervisor"
 
-touch "$file_name"_"$(date +"%Y_%m").log"
-file="$file_name"_"$(date +"%Y_%m").log"
+touch "$log_file"
+
 #Activity
 echo "please select activity:
-1.lectures
-2.teaching
-3.research
-4.seminars|workshops|conferences
-5.holiday"
+1. lectures
+2. teaching
+3. research
+4. seminars|workshops|conferences
+5. holiday"
 
-read act
-if [[ "$act" = "1" ]];then
-	activity='lecture'
-	echo "activity: "$activity""
+read -r act
+case "$act" in
+	1) activity='lecture' ;;
+	2) activity='teaching' ;;
+	3) activity='research' ;;
+	4) activity='seminar|workshop|conference' ;;
+	5) activity='HOLIDAY' ;;
+	*)
+		echo "you have chosen an incorrect option"
+		activity='unidentified'
+		echo "activity: $activity"
+		exit 1
+		;;
+esac
+echo "activity: $activity"
 
-elif [[ "$act" = "2" ]];then 
-	activity='teaching'
-	echo "activity: $activity"
-
-elif [[ "$act" = "3" ]];then 
-	activity='research'
-	echo "activity: $activity"
-
-elif [[ "$act" = "4" ]];then 
-	activity='seminar|workshop|conference'
-	echo "activity: $activity"
-
-elif [[ "$act" = "5" ]];then 
-	activity='HOLIDAY'
-	echo "activity: $activity"
-
-else 
-	echo "you have chosen an incorrect option"
-	activity='unidentified'
-	echo "activity: $activity"
+################# HEADER #####################
+if ! [[ -s "$log_file" ]]; then
+	echo "First working day of the month: $(date '+%Y.%m.%d @ %H:%M:%S')"
+	{
+		echo "$institution"
+		echo "$faculty"
+		echo "$division"
+		echo
+		echo "$name"
+		echo "$prof"
+		echo "__________"
+		echo
+	} >> "$log_file"
 fi
 
 ################ VARIABLES ################
-ll=$( tail -n 1 "$file" )
+ll=$(tail -n 1 "$log_file")
 rl="${ll%% *}"
-#echo "rl: $rl"
-################# HEADER #####################
-if [[ "$ll" = "" ]]; then
-	echo "$institution
-$faculty
-$intitute$division
 
-$name
-$id
-$prof
-__________ 
-
-`date +"%A"` Activity: $activity 
-"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""">> "$file"
-	echo "First working day of the month: "`date '+%Y.%m.%d @ %H:%M:%S'`""
-
-#"`date +"%A"` Activity: $activity 
-#"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`"">> "$file_name"_"$(date +"%Y_%m").log""
-
+if [[ "$rl" == "Date" ]]; then
+	# Delete signature block if present (macOS compatible)
+	# This deletes the last 6 lines of the file
+	# Using a temporary file is safer and more efficient than looping sed
+	tmp_file=$(mktemp)
+	head -n -6 "$log_file" > "$tmp_file" && mv "$tmp_file" "$log_file"
+	ll=$(tail -n 1 "$log_file")
+	rl="${ll%% *}"
 fi
-ll=$( tail -n 1 "$file" )
-rl="${ll%% *}"
-#echo "rl: "$rl""
 
-if [[ "$rl" == "Date" ]];then
-    #awk -v n=3 'NR>n{print a[NR%n]} {a[NR%n]=$0}' input.txt > temp.txt && mv temp.txt input.txt
-	#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-9)),\$d" "$file_name"_"$(date +"%Y_%m").log"
-    awk -v n=9 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
-	ll=$( tail -n 1 "$file" )
+if [[ "$rl" == "elapsed_time:" ]]; then
+	# Get the login line which is 3 lines above the last line
+	ll=$(tail -n 3 "$log_file" | head -n 1)
+	rl="${ll%% *}"
 fi
-if [[ "$rl" == "elapsed_time:" ]];then
-    awk -v n=2 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
-    #sed -e :a -e '$d;N;2,Nd;ba' "$file" > tmp.txt && mv tmp.txt "$file"
-	#sed '$d' "$file_name"_"$(date +"%Y_%m").log"; sed '$d' "$file_name"_"$(date +"%Y_%m").log"
-	#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-2)),\$d" "$file_name"_"$(date +"%Y_%m").log"
-	#ll=$(cat "$file_name"_"$(date +"%Y_%m").log" | tail -3 | head -1 )
-	#echo "ll:$ll"
-	ll=$( tail -n 1 "$file" )
-	#echo "ll:$ll"
-fi
-rl="${ll%% *}"
-#echo "rl: $rl"
-sl=${ll#*log-in  : }
-#echo "ll: $ll"
-#echo "sl: $sl"
-fulldate=${sl#*: }
-#echo "full date: $fulldate"
-idate=${fulldate%% *}
-#echo "idate: $idate"
-itime=${fulldate#*@ }
-iday=${idate#*.*.}
-#echo "iday: $iday"
-fday=`date '+%d'`  
-#echo "fday: $fday"
-#echo "today: "`date '+%d'`""
-itime=$(date -j -f "%H:%M:%S" "$itime" +%s)  #date -j -f "%Y-%m-%d" "2010-10-02" "+%s"
-ftime="`date '+%H:%M:%S'`"
-ftime=$(date +%s)	#ftime=$(date -d "$ftime" +%s.%N)
-dtime=$(awk "BEGIN {print ($ftime-$itime)}") #$(($ftime-$itime))
-hrs=$(awk "BEGIN {print ($dtime/3600)}") #$(($dtime/3600))
-rhrs=$(awk "BEGIN {print ($dtime%3600)}") #$(($dtime%3600))
-min=$(awk "BEGIN {print ($rhrs/60)}") #$(($rhrs/60))
-sec=$(awk "BEGIN {print ($rhrs%60)}") #$(($rhrs%60))
-n_hours="${hrs%.*}""hrs,""${min%.*}""mins,""${sec%.*}""secs"
-#n_hours="$hrs""hrs,""$min""mins,""$sec""secs" ${num%.*}
-#echo "itime: $itime"
-#echo "ftime: $ftime"
-echo "logged at date: "`date '+%Y.%m.%d @ %H:%M:%S'`""
 
-ll=$( tail -n 1 "$file" )
-rl="${ll%% *}"
-
-#if [[ "$iday" = "$fday" ]];then
-#	if [[ "$rl" == "elapsed_time:" ]];then  
-#		sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-1)),\$d" "$file_name"_"$(date +"%Y_%m").log"
-#	fi
-#fi
-
-if [[ "$iday" = "$fday" ]];then
-	if [[ "$rl" == "elapsed_time:" ]];then  
-		#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-2)),\$d" "$file_name"_"$(date +"%Y_%m").log"
-        awk -v n=2 'NR>n{print a[NR%n]} {a[NR%n]=$0}' "$file" > temp.txt && mv temp.txt "$file"
-		#sed -i "$(($(wc -l < "$file_name"_"$(date +"%Y_%m").log")-3)),\$d" "$file"
-        #head -n -2 "$file" > tmp.txt && mv tmp.txt "$file"
-	fi
-	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file"
-	echo "elapsed_time: ""$n_hours" >> "$file"
-	echo "you have spent "$n_hours" on $activity"
+# Check if we have a valid login line
+if [[ "$rl" != "log-in" ]]; then
+	# If not, it's a new day entry
+	iday=""
 else
-	echo "
-`date +"%A"` Activity: $activity 
-"log-in  : "`date '+%Y.%m.%d @ %H:%M:%S'`""" >> "$file"
-	echo "log-out : "`date '+%Y.%m.%d @ %H:%M:%S'`"" >> "$file"
-	echo "elapsed_time: ""0hrs,0mins,0secs" >> "$file"
+	# Parse existing login line
+	sl=${ll#*log-in  : }
+	fulldate=${sl#*: }
+	idate=${fulldate%% *}
+	itime=${fulldate#*@ }
+	iday=${idate##*.}
+fi
+
+fday=$(date '+%d')
+now_ts=$(date "+%s")
+
+if [[ "$iday" == "$fday" ]]; then
+	# Same day: calculate elapsed time and log out
+	# macOS 'date' for parsing time to timestamp
+	itime_ts=$(date -j -f "%H:%M:%S" "$itime" "+%s")
+	dtime=$((now_ts - itime_ts))
+	hrs=$((dtime / 3600))
+	min=$(((dtime % 3600) / 60))
+	sec=$((dtime % 60))
+	n_hours="${hrs}hrs,${min}mins,${sec}secs"
+
+	# Remove previous elapsed_time line if it exists (macOS sed)
+	if [[ "$(tail -n 1 "$log_file")" == "elapsed_time:"* ]]; then
+		sed -i '' '$d' "$log_file"
+	fi
+
+	echo "log-out : $(date '+%Y.%m.%d @ %H:%M:%S')" >> "$log_file"
+	echo "elapsed_time: $n_hours" >> "$log_file"
+	echo "you have spent $n_hours on $activity"
+else
+	# New day: log in and out immediately with 0 time
+	{
+		echo
+		echo "$(date +"%A") Activity: $activity"
+		echo "log-in  : $(date '+%Y.%m.%d @ %H:%M:%S')"
+		echo "log-out : $(date '+%Y.%m.%d @ %H:%M:%S')"
+		echo "elapsed_time: 0hrs,0mins,0secs"
+	} >> "$log_file"
 	echo "you have spent 0hrs,0mins,0secs on $activity"
 fi
 
-lday=$(cal $(date +"%m %Y") | awk 'NF {DAYS = $NF}; END {print DAYS}')
-lday=$(($lday-4))
-#echo "lday: $lday"
-#echo "fday: $fday"
-
-if [[ "$fday" > "$lday" ]];then
-	echo "$signature" >> "$file"
+# Add signature at the end of the month
+# macOS 'date' for date arithmetic to get the last day of the current month
+last_day_of_month=$(date -v+1m -v1d -v-1d +%d)
+# Check if today is one of the last 4 days of the month
+if [[ "$fday" -gt $((last_day_of_month - 4)) ]]; then
+	# Avoid adding signature if it's already there
+	if ! grep -q "Date and Signature of Supervisor" "$log_file"; then
+		echo "$signature" >> "$log_file"
+	fi
 fi
-
-
-#sed -i -re "s/poniedziałek/""Monday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/wtorek/""Tuesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/środa/""Wednesday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/czwartek/""Thursday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/piątek/""Friday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/sobota/""Saturday""/g" ""$file_name"_"$(date +"%Y_%m").log""
-#sed -i -re "s/niedziela/""Sunday""/g" ""$file_name"_"$(date +"%Y_%m").log""
