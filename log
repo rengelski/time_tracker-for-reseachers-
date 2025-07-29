@@ -1,0 +1,136 @@
+#!/bin/bash
+# Set locale to ensure day names are in English
+export LC_TIME=C.UTF-8
+
+file_name='TimeTracker'
+institution='University of Oulu'
+faculty='Faculty of Science'
+division='Nano and Molecular Systems Research Unit'
+name='Postdoctoral Researcher: Rengel Cane E. Sia'
+prof='Line Manager: Dr. Matti Silveri'
+
+# Create log directory if it doesn't exist
+mkdir -p "${HOME}/logs"
+cd "${HOME}/logs" || exit 1
+log_file="${HOME}/logs/${file_name}_$(date +"%Y_%m").log"
+
+signature="__________
+
+
+
+$(date '+%Y/%m/%d')
+_________________________________                                       _________________________________
+Date and Signature of Postdoc Fellow                                    Date and Signature of Supervisor"
+
+touch "$log_file"
+
+#Activity
+echo "please select activity:
+1. lectures
+2. teaching
+3. research
+4. seminars|workshops|conferences
+5. holiday"
+
+read -r act
+case "$act" in
+	1) activity='lecture' ;;
+	2) activity='teaching' ;;
+	3) activity='research' ;;
+	4) activity='seminar|workshop|conference' ;;
+	5) activity='HOLIDAY' ;;
+	*)
+		echo "you have chosen an incorrect option"
+		activity='unidentified'
+		echo "activity: $activity"
+		exit 1
+		;;
+esac
+echo "activity: $activity"
+
+################# HEADER #####################
+if ! [[ -s "$log_file" ]]; then
+	echo "First working day of the month: $(date '+%Y.%m.%d @ %H:%M:%S')"
+	{
+		echo "$institution"
+		echo "$faculty"
+		echo "$division"
+		echo
+		echo "$name"
+		echo "$prof"
+		echo "__________"
+		echo
+	} >> "$log_file"
+fi
+
+################ VARIABLES ################
+ll=$(tail -n 1 "$log_file")
+rl="${ll%% *}"
+
+if [[ "$rl" == "Date" ]]; then
+	# Delete signature block if present
+	sed -i -e :a -e '$d;N;2,9ba;P;D' -e d "$log_file"
+	ll=$(tail -n 1 "$log_file")
+	rl="${ll%% *}"
+fi
+
+if [[ "$rl" == "elapsed_time:" ]]; then
+	# Get the login line which is 3 lines above the last line
+	ll=$(tail -n 3 "$log_file" | head -n 1)
+	rl="${ll%% *}"
+fi
+
+# Check if we have a valid login line
+if [[ "$rl" != "log-in" ]]; then
+	# If not, it's a new day entry
+	iday=""
+else
+	# Parse existing login line
+	sl=${ll#*log-in  : }
+	fulldate=${sl#*: }
+	idate=${fulldate%% *}
+	itime=${fulldate#*@ }
+	iday=${idate##*.}
+fi
+
+fday=$(date '+%d')
+now_ts=$(date "+%s")
+
+if [[ "$iday" == "$fday" ]]; then
+	# Same day: calculate elapsed time and log out
+	itime_ts=$(date -d "$itime" "+%s")
+	dtime=$((now_ts - itime_ts))
+	hrs=$((dtime / 3600))
+	min=$(((dtime % 3600) / 60))
+	sec=$((dtime % 60))
+	n_hours="${hrs}hrs,${min}mins,${sec}secs"
+
+	# Remove previous elapsed_time line if it exists
+	if [[ "$(tail -n 1 "$log_file")" == "elapsed_time:"* ]]; then
+		sed -i '$d' "$log_file"
+	fi
+
+	echo "log-out : $(date '+%Y.%m.%d @ %H:%M:%S')" >> "$log_file"
+	echo "elapsed_time: $n_hours" >> "$log_file"
+	echo "you have spent $n_hours on $activity"
+else
+	# New day: log in and out immediately with 0 time
+	{
+		echo
+		echo "$(date +"%A") Activity: $activity"
+		echo "log-in  : $(date '+%Y.%m.%d @ %H:%M:%S')"
+		echo "log-out : $(date '+%Y.%m.%d @ %H:%M:%S')"
+		echo "elapsed_time: 0hrs,0mins,0secs"
+	} >> "$log_file"
+	echo "you have spent 0hrs,0mins,0secs on $activity"
+fi
+
+# Add signature at the end of the month
+last_day_of_month=$(date -d "$(date +%Y-%m-01) +1 month -1 day" +%d)
+# Check if today is one of the last 4 days of the month
+if [[ "$fday" -gt $((last_day_of_month - 4)) ]]; then
+	# Avoid adding signature if it's already there
+	if ! grep -q "Date and Signature of Supervisor" "$log_file"; then
+		echo "$signature" >> "$log_file"
+	fi
+fi
